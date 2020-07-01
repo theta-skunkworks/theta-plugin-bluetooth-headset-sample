@@ -2,8 +2,8 @@
 
 This is a sample program that allows you to control THETA from a Bluetooth Audio device.
 
-より詳しい日本語の説明は[こちら](T.B.D.)。<br>
-[Click here](T.B.D.) for a more detailed explanation in Japanese.
+より詳しい日本語の説明は[こちら](https://qiita.com/mShiiina/items/4b9f74625deeb43763e9)。<br>
+[Click here](https://qiita.com/mShiiina/items/4b9f74625deeb43763e9) for a more detailed explanation in Japanese.
 
 ## Usage
 
