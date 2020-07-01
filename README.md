@@ -1,6 +1,7 @@
 # Bluetooth Audio Sample for RICOH THETA
 
 This is a sample program that allows you to control THETA from a Bluetooth Audio device.
+[Don't forget to update the firmware!](https://api.ricoh/news/2020/06/17/ricoh-theta-api-update-z1-1.50.1-v-3.40.1/)
 
 より詳しい日本語の説明は[こちら](https://qiita.com/mShiiina/items/4b9f74625deeb43763e9)。<br>
 [Click here](https://qiita.com/mShiiina/items/4b9f74625deeb43763e9) for a more detailed explanation in Japanese.
