@@ -5,6 +5,8 @@ This is a sample program that allows you to control THETA from a Bluetooth Audio
 より詳しい日本語の説明は[こちら](https://qiita.com/mShiiina/items/4b9f74625deeb43763e9)。<br>
 [Click here](https://qiita.com/mShiiina/items/4b9f74625deeb43763e9) for a more detailed explanation in Japanese.
 
+[![](http://img.youtube.com/vi/wF3f3BWbe4M/0.jpg)](http://www.youtube.com/watch?v=wF3f3BWbe4M "")
+
 ## Usage
 
 ### Pairing
