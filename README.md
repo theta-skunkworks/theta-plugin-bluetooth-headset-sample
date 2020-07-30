@@ -8,6 +8,14 @@ This is a sample program that allows you to control THETA from a Bluetooth Audio
 
 [![](http://img.youtube.com/vi/wF3f3BWbe4M/0.jpg)](http://www.youtube.com/watch?v=wF3f3BWbe4M "")
 
+
+<2020/07/30 Update:apk Ver 1.1.0>
+- Supports two languages, Japanese and English. The last language setting used is retained when the plugin is closed.
+- Improved sound quality by using Amazon Polly to generate synthetic speech.
+
+[![](https://img.youtube.com/vi/NN33SM5_SJQ/0.jpg)](https://www.youtube.com/watch?v=NN33SM5_SJQ)
+
+
 ## Usage
 
 ### Pairing
@@ -47,6 +55,7 @@ The behavior of THETA corresponding to the operation of audio equipment is as fo
 |Shutter Short press|Shooting|
 |WLAN Short press|Volume +1 step|
 |Mode Short press|Volume -1 step|
+|WLAN Long press|Language switching|
 
 
 ## Bluetooth audio device confirmed to work
@@ -80,7 +89,10 @@ The behavior of THETA corresponding to the operation of audio equipment is as fo
 * gradle ver.5.1.1
 
 ## About voice data licensing 
-The sound data used in this program is created at the following site.
+
+Since apk version V1.1.0, voice data has been created with [Amazon Polly](https://aws.amazon.com/jp/polly/) for both English and Japanese. License notation is unnecessary.
+
+The audio data used by the old apk (Japanese only) was created at the following site.
 
 [https://note.cman.jp/other/voice/](https://note.cman.jp/other/voice/)
 

@@ -43,6 +43,7 @@ public class ChangeEvTask extends AsyncTask<Void, Void, Integer> {
     public static final int EV_P20 = 12;
     public static final int EV_MIN = EV_M20;
     public static final int EV_MAX = EV_P20;
+    public static final int EV_ERR = 13;
 
     public static final String evList[] = {
             "-2.0",
@@ -60,31 +61,57 @@ public class ChangeEvTask extends AsyncTask<Void, Void, Integer> {
             "2.0"
     };
 
-    private final Integer[] soundList = {
-            R.raw.ev_m20,
-            R.raw.ev_m17,
-            R.raw.ev_m13,
-            R.raw.ev_m10,
-            R.raw.ev_m07,
-            R.raw.ev_m03,
-            R.raw.ev_0,
-            R.raw.ev_p03,
-            R.raw.ev_p07,
-            R.raw.ev_p10,
-            R.raw.ev_p13,
-            R.raw.ev_p17,
-            R.raw.ev_p20
+    private int languageIndex;
+
+    private final Integer[][] soundListEv = {
+            {
+                    R.raw.ev_m20_jp,
+                    R.raw.ev_m17_jp,
+                    R.raw.ev_m13_jp,
+                    R.raw.ev_m10_jp,
+                    R.raw.ev_m07_jp,
+                    R.raw.ev_m03_jp,
+                    R.raw.ev_0_jp,
+                    R.raw.ev_p03_jp,
+                    R.raw.ev_p07_jp,
+                    R.raw.ev_p10_jp,
+                    R.raw.ev_p13_jp,
+                    R.raw.ev_p17_jp,
+                    R.raw.ev_p20_jp,
+                    R.raw.ev_error_jp
+            },
+            {
+                    R.raw.ev_m20_en,
+                    R.raw.ev_m17_en,
+                    R.raw.ev_m13_en,
+                    R.raw.ev_m10_en,
+                    R.raw.ev_m07_en,
+                    R.raw.ev_m03_en,
+                    R.raw.ev_0_en,
+                    R.raw.ev_p03_en,
+                    R.raw.ev_p07_en,
+                    R.raw.ev_p10_en,
+                    R.raw.ev_p13_en,
+                    R.raw.ev_p17_en,
+                    R.raw.ev_p20_en,
+                    R.raw.ev_error_en
+            }
     };
 
     private final Context context;
     private int setEv = EV_ZERO;
 
-    public ChangeEvTask(Context context, int inputEv) {
+    public ChangeEvTask(Context context, int inputEv, int inLangIndex) {
         this.context = context;
         if ((EV_MINUS <= inputEv) && (inputEv <= EV_MAX)) {
             setEv = inputEv;
         } else {
             setEv = EV_ZERO;
+        }
+        if ( SoundManagerTask.LANGUAGE_JP <= inLangIndex && inLangIndex <= SoundManagerTask.LANGUAGE_EN) {
+            languageIndex = inLangIndex;
+        } else {
+            languageIndex = SoundManagerTask.LANGUAGE_EN;
         }
     }
 
@@ -167,9 +194,9 @@ public class ChangeEvTask extends AsyncTask<Void, Void, Integer> {
     protected void onPostExecute(Integer result) {
         //resultにあった音声を再生
         if ((EV_MIN <= result) && (result <= EV_MAX)) {
-            new SoundManagerTask(context, soundList[result]).execute();
+            new SoundManagerTask(context, soundListEv[languageIndex][result]).execute();
         } else if (result == -2) {
-            new SoundManagerTask(context, R.raw.ev_error).execute();
+            new SoundManagerTask(context, soundListEv[languageIndex][EV_ERR]).execute();
         } else {
             //実行不可は無処理
         }

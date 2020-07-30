@@ -25,6 +25,9 @@ import android.util.Log;
 public class SoundManagerTask extends AsyncTask<Void, Void, Integer> {
     private static final String TAG = "SoundManagerTask";
 
+    public static final int LANGUAGE_JP = 0;
+    public static final int LANGUAGE_EN = 1;
+
     private final Context context;
     private Integer soundResouse;
 

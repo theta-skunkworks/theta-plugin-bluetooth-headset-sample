@@ -17,9 +17,11 @@ package skunkworks.headset;
 
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.TextView;
@@ -28,6 +30,7 @@ import com.theta360.pluginapplication.bluetooth.MediaReceiver;
 import com.theta360.pluginapplication.task.ChangeCaptureModeTask;
 import com.theta360.pluginapplication.task.ChangeEvTask;
 import com.theta360.pluginapplication.task.ChangeVolumeTask;
+import com.theta360.pluginapplication.task.SoundManagerTask;
 import com.theta360.pluginapplication.task.EnableBluetoothClassicTask;
 import com.theta360.pluginapplication.task.ShutterButtonTask;
 import com.theta360.pluginlibrary.activity.PluginActivity;
@@ -41,10 +44,18 @@ public class MainActivity extends PluginActivity {
 
     private static final String ACTION_OLED_DISPLAY_SET = "com.theta360.plugin.ACTION_OLED_DISPLAY_SET";
     private MediaReceiver mMediaReceiver = null;
-    //Mode長押し、短押し判別用
-    private boolean onKeyLongPressModeButton = false;
     //プラグイン起動時のMode長押し後 KeyUpをスルーする用
     private boolean onKeyDownModeButton = false;
+    //長押し後のボタン離し認識用
+    private boolean onKeyLongPressWlan = false;
+    //発話言語保持用
+    private int languageIndex = SoundManagerTask.LANGUAGE_EN;
+    private final Integer[] soundListChgLang = {
+            R.raw.speak_in_jp,
+            R.raw.speak_in_en
+    };
+
+
     private EnableBluetoothClassicTask.Callback mEnableBluetoothClassicTask = new EnableBluetoothClassicTask.Callback() {
         @Override
         public void onEnableBluetoothClassic(String result) {
@@ -65,7 +76,7 @@ public class MainActivity extends PluginActivity {
             if (stream_type == AudioManager.STREAM_MUSIC) {
                 if (vol != prev_vol) {
                     new ChangeVolumeTask(getApplicationContext(), vol,
-                            ChangeVolumeTask.ACTION_TYPE_SET_VOL).execute();
+                            ChangeVolumeTask.ACTION_TYPE_SET_VOL, languageIndex).execute();
                 }
             }
         }
@@ -95,41 +106,71 @@ public class MainActivity extends PluginActivity {
                 TextView viewKeyCode = (TextView) findViewById(R.id.viewKeyDown);
                 String strKeyCode = String.valueOf(keyCode);
                 viewKeyCode.setText(strKeyCode + "[" + event.keyCodeToString(keyCode) + "]");
-                if (keyCode != KeyReceiver.KEYCODE_MEDIA_RECORD) {
-                    execKeyProcess(keyCode2KeyProcess(keyCode));
-                } else {
-                    onKeyDownModeButton = true;
+
+                switch (keyCode) {
+                    case KeyReceiver.KEYCODE_CAMERA :
+                        //シャッターボタンはonKeyDownで反応させ長押しは実装しない。
+                        execKeyProcess(keyCode2KeyProcess(keyCode));
+                        break;
+                    case KeyReceiver.KEYCODE_MEDIA_RECORD :
+                        //プラグイン起動時のMode長押し後 onKeyUp() を無処理とするための仕掛け
+                        onKeyDownModeButton = true;
+                        break;
+                    default:
+                        //シャッターボタン以外の短押しはonKeyUpで判断して実行
+                        break;
                 }
             }
 
             @Override
             public void onKeyUp(int keyCode, KeyEvent event) {
-                /**
-                 * You can control the LED of the camera.
-                 * It is possible to change the way of lighting, the cycle of blinking, the color of light emission.
-                 * Light emitting color can be changed only LD3.
-                 */
                 Log.d(TAG, "onKeyUp(): keyCode=" + keyCode + ", keyEvent=" + event);
                 TextView viewKeyCode = (TextView) findViewById(R.id.viewKeyUp);
                 String strKeyCode = String.valueOf(keyCode);
                 viewKeyCode.setText(strKeyCode + "[" + event.keyCodeToString(keyCode) + "]");
-                if (keyCode == KeyReceiver.KEYCODE_MEDIA_RECORD) {
-                    if (onKeyDownModeButton) {
-                        if (onKeyLongPressModeButton) {
-                            onKeyLongPressModeButton = false;
+
+                switch (keyCode) {
+                    case KeyReceiver.KEYCODE_CAMERA :
+                        //シャッターはonKeyDownで実行済み。onKeyUpでは無処理。
+                        break;
+                    case KeyReceiver.KEYCODE_WLAN_ON_OFF :
+                        if (onKeyLongPressWlan) {
+                            onKeyLongPressWlan=false;
                         } else {
                             execKeyProcess(keyCode2KeyProcess(keyCode));
                         }
-                    }
-                    onKeyDownModeButton = false;
+                        break;
+                    case KeyReceiver.KEYCODE_MEDIA_RECORD :
+                        if (onKeyDownModeButton) {
+                            execKeyProcess(keyCode2KeyProcess(keyCode));
+                        }
+                        onKeyDownModeButton = false;
+                        break;
+                    default:
+                        //AVRCP経由のキーコード実行
+                        execKeyProcess(keyCode2KeyProcess(keyCode));
+                        break;
                 }
-
             }
 
             @Override
             public void onKeyLongPress(int keyCode, KeyEvent event) {
                 Log.d(TAG, "onKeyLongPress(): keyCode=" + keyCode + ", keyEvent=" + event);
-                onKeyLongPressModeButton = true;
+
+                switch (keyCode) {
+                    case KeyReceiver.KEYCODE_WLAN_ON_OFF:
+                        onKeyLongPressWlan=true;
+                        if ( languageIndex == SoundManagerTask.LANGUAGE_JP ) {
+                            languageIndex = SoundManagerTask.LANGUAGE_EN;
+                        } else {
+                            languageIndex = SoundManagerTask.LANGUAGE_JP;
+                        }
+                        new SoundManagerTask(getApplicationContext(), soundListChgLang[languageIndex]).execute();
+
+                        break;
+                    default:
+                        break;
+                }
             }
 
         });
@@ -139,6 +180,9 @@ public class MainActivity extends PluginActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        //前回起動時に保存した情報を読む
+        restorePluginInfo();
 
         int index = 0;
         while (true) {
@@ -163,6 +207,9 @@ public class MainActivity extends PluginActivity {
     protected void onPause() {
         // Do end processing
         //close();
+
+        //次回起動時のために必要な情報を保存
+        savePluginInfo();
 
         super.onPause();
     }
@@ -205,20 +252,20 @@ public class MainActivity extends PluginActivity {
                 new ShutterButtonTask().execute();
                 break;
             case SET_EV_PLUS:
-                new ChangeEvTask(getApplicationContext(), ChangeEvTask.EV_PLUS)
+                new ChangeEvTask(getApplicationContext(), ChangeEvTask.EV_PLUS, languageIndex)
                         .execute();
                 break;
             case SET_EV_MINUS:
-                new ChangeEvTask(getApplicationContext(), ChangeEvTask.EV_MINUS)
+                new ChangeEvTask(getApplicationContext(), ChangeEvTask.EV_MINUS, languageIndex)
                         .execute();
                 break;
             case SET_VOL_PLUS:
                 new ChangeVolumeTask(getApplicationContext(), 0,
-                        ChangeVolumeTask.ACTION_TYPE_UP_VOL).execute();
+                        ChangeVolumeTask.ACTION_TYPE_UP_VOL, languageIndex).execute();
                 break;
             case SET_VOL_MINUS:
                 new ChangeVolumeTask(getApplicationContext(), 0,
-                        ChangeVolumeTask.ACTION_TYPE_DOWN_VOL).execute();
+                        ChangeVolumeTask.ACTION_TYPE_DOWN_VOL, languageIndex).execute();
                 break;
         }
 
@@ -302,4 +349,20 @@ public class MainActivity extends PluginActivity {
         return result;
     }
 
+    //==============================================================
+    // 設定保存・復帰
+    //==============================================================
+    private static final String SAVE_KEY_LANG_INDEX  = "languageIndex";
+    SharedPreferences sharedPreferences;
+    void restorePluginInfo() {
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+        languageIndex = sharedPreferences.getInt(SAVE_KEY_LANG_INDEX, SoundManagerTask.LANGUAGE_EN);
+    }
+    void savePluginInfo() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        editor.putInt(SAVE_KEY_LANG_INDEX, languageIndex);
+        editor.commit();
+    }
 }

@@ -39,13 +39,24 @@ public class ChangeVolumeTask extends AsyncTask<Void, Void, Integer> {
     private AudioManager mAudioManager;
     private int mType;
 
+    private int languageIndex ;
+    private final Integer[] soundListChgVol = {
+            R.raw.speech_volume_jp,
+            R.raw.speech_volume_en
+    };
 
-    public ChangeVolumeTask(Context context, int val, int type) {
+    public ChangeVolumeTask(Context context, int val, int type, int inLangIndex) {
         this.context = context;
         mAudioManager = (AudioManager) context
                 .getSystemService(Context.AUDIO_SERVICE);
         mType = type;
         mChangingStreamVol = val;
+        if ( SoundManagerTask.LANGUAGE_JP <= inLangIndex && inLangIndex <= SoundManagerTask.LANGUAGE_EN) {
+            languageIndex = inLangIndex;
+        } else {
+            languageIndex = SoundManagerTask.LANGUAGE_EN;
+        }
+
     }
 
     @Override
@@ -116,7 +127,7 @@ public class ChangeVolumeTask extends AsyncTask<Void, Void, Integer> {
             }
 
             //サンプル音を鳴らす
-            new SoundManagerTask(context, R.raw.speech_volume).execute();
+            new SoundManagerTask(context, soundListChgVol[languageIndex]).execute();
 
         }
     }
