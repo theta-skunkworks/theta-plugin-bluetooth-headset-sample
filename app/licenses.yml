@@ -1,84 +1,94 @@
-- artifact: com.android.support:support-v4:+
-  name: Android Support Library v4
-  copyrightHolder: The Android Open Source Project
+- artifact: android.arch.core:common:+
+  name: common
+  copyrightHolder: The Android Studio Project
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: http://developer.android.com/tools/extras/support-library.html
-- artifact: com.android.support:support-media-compat:+
-  name: Android Support Library media compat
-  copyrightHolder: The Android Open Source Project
+  url: https://developer.android.com/topic/libraries/architecture/index.html
+- artifact: android.arch.lifecycle:common:+
+  name: common
+  copyrightHolder: The Android Studio Project
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: http://developer.android.com/tools/extras/support-library.html
-- artifact: com.android.support:support-fragment:+
-  name: Android Support Library fragment
-  copyrightHolder: The Android Open Source Project
+  url: https://developer.android.com/topic/libraries/architecture/index.html
+- artifact: android.arch.lifecycle:runtime:+
+  name: runtime
+  copyrightHolder: The Android Studio Project
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: http://developer.android.com/tools/extras/support-library.html
-- artifact: com.android.support:support-core-ui:+
-  name: Android Support Library core ui
-  copyrightHolder: The Android Open Source Project
+  url: https://developer.android.com/topic/libraries/architecture/index.html
+- artifact: com.android.support.constraint:constraint-layout-solver:+
+  name: constraint-layout-solver
+  copyrightHolder: The Android Studio Project
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: http://developer.android.com/tools/extras/support-library.html
-- artifact: com.android.support:support-core-utils:+
-  name: Android Support Library core utils
-  copyrightHolder: The Android Open Source Project
+  url: http://tools.android.com
+- artifact: com.android.support.constraint:constraint-layout:+
+  name: constraint-layout
+  copyrightHolder: The Android Studio Project
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: http://developer.android.com/tools/extras/support-library.html
-- artifact: com.android.support:support-compat:+
-  name: Android Support Library compat
+  url: http://tools.android.com
+- artifact: com.android.support:animated-vector-drawable:+
+  name: animated-vector-drawable
   copyrightHolder: The Android Open Source Project
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
   url: http://developer.android.com/tools/extras/support-library.html
 - artifact: com.android.support:appcompat-v7:+
-  name: Android AppCompat Library v7
+  name: appcompat-v7
   copyrightHolder: The Android Open Source Project
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
   url: http://developer.android.com/tools/extras/support-library.html
 - artifact: com.android.support:support-annotations:+
-  name: Android Support Library Annotations
+  name: support-annotations
   copyrightHolder: The Android Open Source Project
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
   url: http://developer.android.com/tools/extras/support-library.html
-- artifact: com.android.support:animated-vector-drawable:+
-  name: Android Support AnimatedVectorDrawable
+- artifact: com.android.support:support-compat:+
+  name: support-compat
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: http://developer.android.com/tools/extras/support-library.html
+- artifact: com.android.support:support-core-ui:+
+  name: support-core-ui
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: http://developer.android.com/tools/extras/support-library.html
+- artifact: com.android.support:support-core-utils:+
+  name: support-core-utils
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: http://developer.android.com/tools/extras/support-library.html
+- artifact: com.android.support:support-fragment:+
+  name: support-fragment
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: http://developer.android.com/tools/extras/support-library.html
+- artifact: com.android.support:support-media-compat:+
+  name: support-media-compat
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: http://developer.android.com/tools/extras/support-library.html
+- artifact: com.android.support:support-v4:+
+  name: support-v4
   copyrightHolder: The Android Open Source Project
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
   url: http://developer.android.com/tools/extras/support-library.html
 - artifact: com.android.support:support-vector-drawable:+
-  name: Android Support VectorDrawable
+  name: support-vector-drawable
   copyrightHolder: The Android Open Source Project
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
   url: http://developer.android.com/tools/extras/support-library.html
-- artifact: com.android.support.constraint:constraint-layout:+
-  name: Android ConstraintLayout
-  copyrightHolder: The Android Studio Project
+- artifact: com.theta360:pluginlibrary:+
+  name: pluginlibrary
+  copyrightHolder: Ricoh Company, Ltd.
   license: The Apache Software License, Version 2.0
-  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: http://tools.android.com
-- artifact: com.android.support.constraint:constraint-layout-solver:+
-  name: Android ConstraintLayout Solver
-  copyrightHolder: The Android Studio Project
-  license: The Apache Software License, Version 2.0
-  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: http://tools.android.com
-- artifact: org.nanohttpd:nanohttpd:+
-  name: NanoHttpd-Core
-  copyrightHolder: NanoHttpd-Project
-  license: BSD 3-Clause "New" or "Revised" License
-  licenseUrl: https://github.com/NanoHttpd/nanohttpd/blob/master/LICENSE.md
-  url: https://github.com/NanoHttpd/nanohttpd
-- artifact: org.nanohttpd:nanohttpd-webserver:+
-  name: NanoHttpd-Webserver
-  copyrightHolder: NanoHttpd-Project
-  license: BSD 3-Clause "New" or "Revised" License
-  licenseUrl: https://github.com/NanoHttpd/nanohttpd/blob/master/LICENSE.md
-  url: https://github.com/NanoHttpd/nanohttpd

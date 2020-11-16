@@ -30,31 +30,56 @@ public class EnableBluetoothClassicTask extends AsyncTask<Void, Void, String> {
 
     @Override
     synchronized protected String doInBackground(Void... params) {
-
+        boolean bluetoothRebootWait = false;
         String errorMessage;
         HttpConnector camera = new HttpConnector("127.0.0.1:8080");
+
+        //事前の状態を保存する
         String bluetoothRole = camera.getOption("_bluetoothRole");
+        String bluetoothPower = camera.getOption("_bluetoothPower");
+        mCallback.saveBluetoothSettings(bluetoothRole, bluetoothPower);
+
+        //BluetoothRole の状態を整える
         if ((bluetoothRole.equals("Central")) || (bluetoothRole.equals("Central_Peripheral"))) {
             errorMessage = camera.setOption("_bluetoothRole", "Peripheral");
             if (errorMessage != null) { // パラメータの設定に失敗した場合はエラーメッセージを表示
                 return "NG";
             }
+            bluetoothRebootWait=true;
         }
-
+        //Bluetooth Classicを有効にする
         errorMessage = camera
                 .setOption("_bluetoothClassicEnable", Boolean.toString(Boolean.TRUE));
         if (errorMessage != null) { // パラメータの設定に失敗した場合はエラーメッセージを表示
             return "NG";
         }
-        String bluetoothPower = camera.getOption("_bluetoothPower");
+        //Bluetooth Power の状態を整える
         if (bluetoothPower.equals("OFF")) {
             errorMessage = camera.setOption("_bluetoothPower", "ON");
             if (errorMessage != null) { // パラメータの設定に失敗した場合はエラーメッセージを表示
                 return "NG";
             }
+
+            // OFF->ON は 500ms切り替わりまち
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-        errorMessage = camera
-                .getOption("_bluetoothClassicEnable");
+        //errorMessage = camera.getOption("_bluetoothClassicEnable");
+
+        if (bluetoothRebootWait) {
+            // _bluetoothRoleをPeripheral以外からPeripheralに切り替えたとき
+            // _bluetoothClassicEnable を trueにする処理の中で行われている
+            // Bluetoothモジュールのリブート完了が遅延するのでWaitする
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         return "OK";
     }
 
@@ -65,6 +90,7 @@ public class EnableBluetoothClassicTask extends AsyncTask<Void, Void, String> {
 
     public interface Callback {
         void onEnableBluetoothClassic(String result);
+        void saveBluetoothSettings(String bluetoothRole, String bluetoothPower);
     }
 }
 

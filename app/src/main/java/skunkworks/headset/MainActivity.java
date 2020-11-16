@@ -30,6 +30,8 @@ import com.theta360.pluginapplication.bluetooth.MediaReceiver;
 import com.theta360.pluginapplication.task.ChangeCaptureModeTask;
 import com.theta360.pluginapplication.task.ChangeEvTask;
 import com.theta360.pluginapplication.task.ChangeVolumeTask;
+import com.theta360.pluginapplication.task.GetCurShutterVolumeTask;
+import com.theta360.pluginapplication.task.RestoreBluetoothSettingsTask;
 import com.theta360.pluginapplication.task.SoundManagerTask;
 import com.theta360.pluginapplication.task.EnableBluetoothClassicTask;
 import com.theta360.pluginapplication.task.ShutterButtonTask;
@@ -54,7 +56,15 @@ public class MainActivity extends PluginActivity {
             R.raw.speak_in_jp,
             R.raw.speak_in_en
     };
-
+    //プラグイン起動前 Bluetooth設定保持用
+    private String originalBluetoothRole = "";
+    private String originalBluetoothPower = "";
+    //プラグイン起動前 Shutter Volume保持用
+    private String originalShutterVolume = "";
+    //前回起動時の Shutter Volume保持用
+    private String lastShutterVolume ="";
+    //初回起動時のShutter Volume（イヤホンやスピーカーのため小さめな音から開始）
+    private static final String initialShutterVolume = "26";
 
     private EnableBluetoothClassicTask.Callback mEnableBluetoothClassicTask = new EnableBluetoothClassicTask.Callback() {
         @Override
@@ -68,6 +78,29 @@ public class MainActivity extends PluginActivity {
                     .startService(
                             new Intent(getApplicationContext(), BluetoothClientService.class));
         }
+        @Override
+        public void saveBluetoothSettings(String bluetoothRole, String bluetoothPower) {
+            Log.d(TAG, "saveBluetoothSettings: bluetoothRole=" + bluetoothRole + ", bluetoothPower=" + bluetoothPower);
+            originalBluetoothRole = bluetoothRole;
+            originalBluetoothPower = bluetoothPower;
+        }
+
+    };
+
+    private ChangeVolumeTask.Callback mChangeVolumeTask = new ChangeVolumeTask.Callback() {
+        @Override
+        public void saveLastShutterVolume(String inLastShutterVolume) {
+            lastShutterVolume = inLastShutterVolume;
+            Log.d(TAG, "saveLastShutterVolume(): lastShutterVolume=" + lastShutterVolume);
+        }
+    };
+
+    private GetCurShutterVolumeTask.Callback mRestoreShutterVolumeTask = new GetCurShutterVolumeTask.Callback() {
+        @Override
+        public void saveCurrentShutterVolume(String currentShutterVolume) {
+            originalShutterVolume = currentShutterVolume;
+            Log.d(TAG, "saveCurrentShutterVolume(): originalShutterVolume=" + originalShutterVolume);
+        }
     };
 
     private MediaReceiver.Callback mMediaReceiverCallback = new MediaReceiver.Callback() {
@@ -75,7 +108,7 @@ public class MainActivity extends PluginActivity {
         public void onChangeVolume(int stream_type, int prev_vol, int vol) {
             if (stream_type == AudioManager.STREAM_MUSIC) {
                 if (vol != prev_vol) {
-                    new ChangeVolumeTask(getApplicationContext(), vol,
+                    new ChangeVolumeTask(getApplicationContext(), mChangeVolumeTask, vol,
                             ChangeVolumeTask.ACTION_TYPE_SET_VOL, languageIndex).execute();
                 }
             }
@@ -93,8 +126,9 @@ public class MainActivity extends PluginActivity {
             sendBroadcast(oledIntentSet);
         }
 
-        new EnableBluetoothClassicTask(getApplicationContext(), mEnableBluetoothClassicTask
-        ).execute();
+        new GetCurShutterVolumeTask(mRestoreShutterVolumeTask).execute();
+
+        new EnableBluetoothClassicTask(getApplicationContext(), mEnableBluetoothClassicTask).execute();
 
         // Set enable to close by pluginlibrary, If you set false, please call close() after finishing your end processing.
         setAutoClose(true);
@@ -184,6 +218,14 @@ public class MainActivity extends PluginActivity {
         //前回起動時に保存した情報を読む
         restorePluginInfo();
 
+        //前回起動時の音量にする（初回起動時を考慮し、ShutterVolumeとSTREAM_MUSICの両方にセットする）
+        int inLastShutterVolume = Integer.parseInt(lastShutterVolume);
+        new ChangeVolumeTask(getApplicationContext(), mChangeVolumeTask,
+                inLastShutterVolume,
+                ChangeVolumeTask.ACTION_TYPE_SUTTER_AND_MUSIC,
+                ChangeVolumeTask.LANGUAGE_NO_SOUND).execute();
+
+
         int index = 0;
         while (true) {
             if (defaultKeyProcess[index][0] == -1) {
@@ -207,6 +249,21 @@ public class MainActivity extends PluginActivity {
     protected void onPause() {
         // Do end processing
         //close();
+
+        Log.d(TAG, "onPause(): lastShutterVolume=" + lastShutterVolume);
+        Log.d(TAG, "onPause(): originalShutterVolume=" + originalShutterVolume);
+
+        //Shutter Volumeをプラグイン起動前の状態に戻す
+        //ShutterVolのみを元に戻す（STREAM_MUSICに設定すると、次回接続後に送れて反映されるので厄介）
+        int inOrgShutterVolume = Integer.parseInt(originalShutterVolume);
+        new ChangeVolumeTask(getApplicationContext(), mChangeVolumeTask,
+                inOrgShutterVolume,
+                ChangeVolumeTask.ACTION_TYPE_SUTTER_VOL,
+                ChangeVolumeTask.LANGUAGE_NO_SOUND).execute();
+
+
+        //Bluetooth関連の設定をプラグイン起動前の状態に戻す
+        new RestoreBluetoothSettingsTask(originalBluetoothRole, originalBluetoothPower ).execute();
 
         //次回起動時のために必要な情報を保存
         savePluginInfo();
@@ -260,12 +317,16 @@ public class MainActivity extends PluginActivity {
                         .execute();
                 break;
             case SET_VOL_PLUS:
-                new ChangeVolumeTask(getApplicationContext(), 0,
-                        ChangeVolumeTask.ACTION_TYPE_UP_VOL, languageIndex).execute();
+                if ( !originalShutterVolume.equals("") ) {
+                    new ChangeVolumeTask(getApplicationContext(), mChangeVolumeTask,0,
+                            ChangeVolumeTask.ACTION_TYPE_UP_VOL, languageIndex).execute();
+                }
                 break;
             case SET_VOL_MINUS:
-                new ChangeVolumeTask(getApplicationContext(), 0,
-                        ChangeVolumeTask.ACTION_TYPE_DOWN_VOL, languageIndex).execute();
+                if ( !originalShutterVolume.equals("") ) {
+                    new ChangeVolumeTask(getApplicationContext(), mChangeVolumeTask,0,
+                            ChangeVolumeTask.ACTION_TYPE_DOWN_VOL, languageIndex).execute();
+                }
                 break;
         }
 
@@ -353,16 +414,19 @@ public class MainActivity extends PluginActivity {
     // 設定保存・復帰
     //==============================================================
     private static final String SAVE_KEY_LANG_INDEX  = "languageIndex";
+    private static final String SAVE_KEY_LAST_SHUTTER_VOL  = "lastSutterVolume";
     SharedPreferences sharedPreferences;
     void restorePluginInfo() {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         languageIndex = sharedPreferences.getInt(SAVE_KEY_LANG_INDEX, SoundManagerTask.LANGUAGE_EN);
+        lastShutterVolume = sharedPreferences.getString(SAVE_KEY_LAST_SHUTTER_VOL, initialShutterVolume);
     }
     void savePluginInfo() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         editor.putInt(SAVE_KEY_LANG_INDEX, languageIndex);
+        editor.putString(SAVE_KEY_LAST_SHUTTER_VOL, lastShutterVolume);
         editor.commit();
     }
 }

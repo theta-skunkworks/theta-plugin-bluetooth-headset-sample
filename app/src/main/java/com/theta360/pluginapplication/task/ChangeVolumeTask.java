@@ -19,6 +19,7 @@ import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.util.Log;
 import com.theta360.pluginapplication.network.HttpConnector;
+
 import skunkworks.headset.R;
 
 
@@ -26,12 +27,18 @@ public class ChangeVolumeTask extends AsyncTask<Void, Void, Integer> {
     public static final int ACTION_TYPE_SET_VOL = 0;
     public static final int ACTION_TYPE_UP_VOL = 1;
     public static final int ACTION_TYPE_DOWN_VOL = 2;
+    public static final int ACTION_TYPE_SUTTER_VOL = 3;
+    public static final int ACTION_TYPE_SUTTER_AND_MUSIC = 4;
+
+    public static final int LANGUAGE_NO_SOUND = -1;
 
     private static final int VOL_CHANGED = 0;
     private static final int VOL_NOT_CHANGED = 1;
 
     private static final String TAG = "ChangeVolumeTask";
     private static final float MAX = 100.0f;
+
+    private Callback mCallback;
 
     private final Context context;
     private int mMaxVolume;
@@ -45,8 +52,12 @@ public class ChangeVolumeTask extends AsyncTask<Void, Void, Integer> {
             R.raw.speech_volume_en
     };
 
-    public ChangeVolumeTask(Context context, int val, int type, int inLangIndex) {
+    public ChangeVolumeTask(Context context, Callback callback, int val, int type, int inLangIndex) {
         this.context = context;
+        this.mCallback = callback;
+
+        Log.d(TAG, "val=" + String.valueOf(val) + ", type=" + String.valueOf(type) + ", inLangIndex=" + String.valueOf(inLangIndex) );
+
         mAudioManager = (AudioManager) context
                 .getSystemService(Context.AUDIO_SERVICE);
         mType = type;
@@ -54,7 +65,11 @@ public class ChangeVolumeTask extends AsyncTask<Void, Void, Integer> {
         if ( SoundManagerTask.LANGUAGE_JP <= inLangIndex && inLangIndex <= SoundManagerTask.LANGUAGE_EN) {
             languageIndex = inLangIndex;
         } else {
-            languageIndex = SoundManagerTask.LANGUAGE_EN;
+            if( inLangIndex == LANGUAGE_NO_SOUND ) {
+                languageIndex = LANGUAGE_NO_SOUND;
+            } else {
+                languageIndex = SoundManagerTask.LANGUAGE_EN;
+            }
         }
 
     }
@@ -89,8 +104,14 @@ public class ChangeVolumeTask extends AsyncTask<Void, Void, Integer> {
             if (mChangingStreamVol < 0) {
                 mChangingStreamVol = 0;
             }
+        } else if ( (mType == ACTION_TYPE_SUTTER_VOL) || (mType == ACTION_TYPE_SUTTER_AND_MUSIC) ) {
+            int inSutterVol = mChangingStreamVol;
+            if ( (int)MAX < inSutterVol ) { inSutterVol = (int)MAX; }
+            if ( inSutterVol < 0 ) { inSutterVol = 0; }
+            mChangingStreamVol = (int)((mMaxVolume*inSutterVol)/MAX + 0.5f);
         }
 
+        Log.d(TAG, "calc shutter volume :mMaxVolume=" + String.valueOf(mMaxVolume));
         // calc shutter volume
         {
             vol = (MAX * mChangingStreamVol) / mMaxVolume;
@@ -107,6 +128,7 @@ public class ChangeVolumeTask extends AsyncTask<Void, Void, Integer> {
             }
         }
         // set shutter volume
+        mCallback.saveLastShutterVolume( String.valueOf(changingShutterVol) );
         String strResult = camera
                 .setOption("_shutterVolume", String.valueOf(changingShutterVol));
         Log.d(TAG, "camera.setOption : _shutterVolume : " + changingShutterVol);
@@ -114,21 +136,38 @@ public class ChangeVolumeTask extends AsyncTask<Void, Void, Integer> {
             ret = VOL_CHANGED;
         }
 
+        if (changingShutterVol == currnetShutterVolume) {
+            Log.d(TAG, "ret=" + String.valueOf(ret));
+            Log.d(TAG, "mChangingStreamVol=" + String.valueOf(mChangingStreamVol) + ", currentStreamVol=" + String.valueOf(currentStreamVol));
+            Log.d(TAG, "changingShutterVol == currnetShutterVolume :" + String.valueOf(changingShutterVol));
+            languageIndex=LANGUAGE_NO_SOUND;
+        }
+
         return ret;
     }
 
     @Override
     protected void onPostExecute(Integer result) {
+        Log.d(TAG, "onPostExecute:result=" + String.valueOf(result));
 
         if (result == VOL_CHANGED) {
-            if ((mType == ACTION_TYPE_UP_VOL) || (mType == ACTION_TYPE_DOWN_VOL)) {
-                // stream volumeの変更　mTypeがACTION_TYPE_SET_VOLの場合は、stream volumeは変更済みのため、設定しない
+            // stream volumeの変更
+            // mTypeがACTION_TYPE_SET_VOLの場合は、stream volumeは変更済みのため、設定しない
+            // mTypeがACTION_TYPE_SUTTER_VOLの場合は 意図的に設定しない
+            if ( (mType == ACTION_TYPE_UP_VOL) || (mType == ACTION_TYPE_DOWN_VOL) || (mType == ACTION_TYPE_SUTTER_AND_MUSIC) ) {
                 mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mChangingStreamVol, 0);
             }
 
-            //サンプル音を鳴らす
-            new SoundManagerTask(context, soundListChgVol[languageIndex]).execute();
+            if ( languageIndex != LANGUAGE_NO_SOUND ) {
+                //サンプル音を鳴らす
+                new SoundManagerTask(context, soundListChgVol[languageIndex]).execute();
+            }
 
         }
     }
+
+    public interface Callback {
+        void saveLastShutterVolume(String lastShutterVolume);
+    }
+
 }

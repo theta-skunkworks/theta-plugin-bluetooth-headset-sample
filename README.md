@@ -15,12 +15,18 @@ This is a sample program that allows you to control THETA from a Bluetooth Audio
 
 [![](https://img.youtube.com/vi/NN33SM5_SJQ/0.jpg)](https://www.youtube.com/watch?v=NN33SM5_SJQ)
 
+<2020/11/16 Update:apk Ver 1.2.0>
+- Added Bluetooth related state saving and recovery processing. 
+- Added volume saving and restoring processing.
+- Removed NanoHTTPD import.
+- Changed the plugin name.
+- A license check was conducted.
 
 ## Usage
 
 ### Pairing
 
-1. If you have enabled the remote control function of THETA using THETA's pre-installed plug-in "Remote Control", please disable this function.
+1. ~~If you have enabled the remote control function of THETA using THETA's pre-installed plug-in "Remote Control", please disable this function.~~ <br>(This is an unnecessary procedure in apk Ver 1.2.0 or later.)
 2. When using the audio device used on the smartphone, temporarily turn off Bluetooth on the smartphone so that the audio device is not connected to the smartphone.
 3. If you need to operate the audio device when pairing the audio device (eg Anker Icon Mini, Apple AirPods series), follow the manual of the audio device.
 4. Launch the plug-in to automatically pair with the audio device
@@ -74,6 +80,11 @@ The behavior of THETA corresponding to the operation of audio equipment is as fo
 * With Anker Liberty Air, the earphone operation itself was difficult because of the touch recognition position and touch sensitivity.
 * The volume control of VANKYO X100 is a long tap. Since the key code is sent continuously during tapping, it is difficult to set the target volume.
 * When pairing an Apple Air Pods Pro with an Android OS device, you need to press the button on the case to enter the pairing state. Please be careful.
+
+### Restrictions
+
+Launching this plug-in switches the capture mode to still image capture mode.<br>
+Even when the plug-in ends, the capture mode remains in the still image capture mode.
 
 ## Development Environment
 
